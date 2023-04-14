@@ -37,7 +37,7 @@ class Student :
           summary.append(pdf_link)
          
       self.downl_latest_pdf(summary)
-      self.print_link(summary)
+      #self.print_link(summary)
 
     def get_creation_date(self,url):
       string = str(url)
@@ -145,8 +145,9 @@ class Student :
          creation_date = self.get_creation_date(pdf_link)
          if creation_date == latest_date:
               self.downl_pdf(pdf_link)
+              self.print_table_csv(self.get_pdfname(pdf_link))
+              self.print_table_excel(self.get_pdfname(pdf_link))
               self.print_table(self.get_pdfname(pdf_link))
-              #self.print_pdf(pdf_link)
               #self.delete_pdf(pdf_link)
 
     def delete_pdf(self,pdf_link):
@@ -159,20 +160,61 @@ class Student :
         else:
             print(f"{file_path} does not exist.")
     
+    def print_table_excel(self,pdf_name):
+        df_list = tabula.io.read_pdf(pdf_name, pages="all",encoding="UTF-8") #encoding UTF-8 for Linux, cp1252 for windows
+        writer = pd.ExcelWriter('output.xlsx')
+
+        for i, df in enumerate(df_list):
+            # Replace "NaN" with empty string
+            df.replace(np.nan, "", inplace=True)
+            # Replace "Unnamed" columns with empty string
+            df.columns = df.columns.str.replace(r'^Unnamed.*$', '', regex=True)
+
+            # Write the DataFrame to an Excel sheet
+            df.to_excel(writer, sheet_name=f"Table {i+1}", index=False)
+
+            # Save and close the Excel writer
+        writer._save()  
+
+        print("Tables have been written to output.xlsx file.")
+           
+    def print_table_csv(self,pdf_name):
+        df_list = tabula.io.read_pdf(pdf_name, pages="all", encoding="UTF-8") # encoding UTF-8 for Linux, cp1252 for windows
+        combined_tables = {} # dictionary to store combined tables by column names
+
+        for i, df in enumerate(df_list):
+            # Replace "NaN" with empty string
+            df.replace(np.nan, "", inplace=True)
+            # Replace "Unnamed" columns with empty string
+            df.columns = df.columns.str.replace(r'^Unnamed.*$', '', regex=True)
+
+            # Check if the table column names are already in the combined tables dictionary
+            if tuple(df.columns) in combined_tables:
+                # If column names already exist, concatenate the dataframe to the combined dataframe
+                combined_tables[tuple(df.columns)] = pd.concat([combined_tables[tuple(df.columns)], df], ignore_index=True)
+            else:
+                # If column names do not exist, add the dataframe as a new entry in the combined tables dictionary
+                combined_tables[tuple(df.columns)] = df
+
+        # Write the combined dataframes to separate CSV files
+        for i, (columns, df) in enumerate(combined_tables.items()):
+            csv_file = f"Table_{i+1}.csv"
+            df.to_csv(csv_file, index=False)
+            print(f"Combined Table {i+1} with column names {columns} has been written to {csv_file}.")
+       
+
+    
     def print_table(self,pdf_name):
         df_list = tabula.io.read_pdf(pdf_name, pages="all",encoding="UTF-8") #encoding UTF-8 for Linux, cp1252 for windows
-        df = df_list[0]
-        is_nan = df.isna()
-        row, col = np.where(is_nan)
-        row = row[0]
-        col = col[0]
-        df.at[row, col] = 0
-        print(df)
-        
+        writer = pd.ExcelWriter('output.xlsx')
 
-   
-   
-
-
+        for i, df in enumerate(df_list):
+            print(f"Table {i+1}:")
+            # Replace "NaN" with empty string
+            df.replace(np.nan, "", inplace=True)
+            # Replace "Unnamed" columns with empty string
+            df.columns = df.columns.str.replace(r'^Unnamed.*$', '', regex=True)
+            print(df)
+            print("-------------------------------")
 
 

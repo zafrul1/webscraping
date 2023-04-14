@@ -6,4 +6,4 @@ if __name__ == "__main__":
     # batch = input("Batch:")
     
 
- student1 = student.Student(uni="hs augsburg", course="informatik")
+ student1 = student.Student(uni="hs augsburg", course="maschinenbau")
