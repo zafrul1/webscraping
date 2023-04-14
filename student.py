@@ -6,9 +6,9 @@ import json
 import urllib.parse
 import requests
 import os 
-import tabula
 import pandas as pd
 import numpy as np
+import tabula
 
 class Student : 
 
@@ -119,7 +119,7 @@ class Student :
         #Close the PDF file
         pdf_file.close()
 
-    def downl_pdf(self,pdf_link):\
+    def downl_pdf(self,pdf_link):
 
         pdfname = self.get_pdfname(pdf_link)
         pdf_response = requests.get(pdf_link)
@@ -160,7 +160,7 @@ class Student :
             print(f"{file_path} does not exist.")
     
     def print_table(self,pdf_name):
-        df_list = tabula.read_pdf(pdf_name, pages="all",encoding="cp1252") #encoding UTF-8 for Linux, cp1252 for windows
+        df_list = tabula.io.read_pdf(pdf_name, pages="all",encoding="UTF-8") #encoding UTF-8 for Linux, cp1252 for windows
         df = df_list[0]
         is_nan = df.isna()
         row, col = np.where(is_nan)
@@ -168,6 +168,10 @@ class Student :
         col = col[0]
         df.at[row, col] = 0
         print(df)
+        
+
+   
+   
 
 
 
